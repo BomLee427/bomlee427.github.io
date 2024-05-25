@@ -4,6 +4,7 @@ date: 2023-09-16T00:00:00+09:00
 categories: ["HomeDoc 개발 회고록"]
 tags: ["엔티티"]
 classes: wide
+toc: true
 ---
 
 이번 포스팅에서는 HomeDoc의 핵심 도메인 중 하나인 **건강 측정 기록** 엔티티들을 살펴보기로 한다.

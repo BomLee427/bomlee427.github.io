@@ -4,6 +4,7 @@ date: 2023-09-02T00:00:00+09:00
 categories: ["HomeDoc 개발 회고록"]
 tags: ["엔티티","패키지 구조"]
 classes: wide
+toc: true
 ---
 
 이번 포스팅에서는 **도메인 계층**의 소스코드를 리뷰하고자 한다.

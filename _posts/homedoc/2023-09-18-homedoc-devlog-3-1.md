@@ -4,6 +4,7 @@ date: 2023-09-18T00:00:00+09:00
 categories: ["HomeDoc 개발 회고록"]
 tags: 
 classes: wide
+toc: true
 ---
 
 이번 포스트에서는 **회원** 및 **건강정보** 도메인의 Controller 계층을 살펴본다.
