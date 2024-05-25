@@ -71,11 +71,11 @@ ERD에서 가장 눈에 띄는 차이로는 상속관계 매핑 전략의 변경
 만일 지금 다시 DB를 설계한다면 **JOIN 전략**을 택할 것 같은데, 건강 측정 기록은 이 서비스의 핵심 비즈니스 로직이기 때문이다. 만일 서비스가 확장되어 현재처럼 단순 측정치 이외의 필드가 추가된다면 단일 테이블 전략으로는 대응하기 좋지 못하다. 최악의 상황에는 서비스 상황에서 DB 구조를 변경하게 될지도 모르니 미리미리 설계 당시부터 확장 가능성을 생각하는 것이 좋겠다.
 
 
-**<설계 당시 UML>**
-![](https://velog.velcdn.com/images/bomlee427/post/aae116bd-042e-4e76-9f15-ab5ad5fcd071/image.png)
+**설계 당시 UML**
+![설계 당시 UML](https://velog.velcdn.com/images/bomlee427/post/aae116bd-042e-4e76-9f15-ab5ad5fcd071/image.png)
 
-**<개발 후 UML>**
-![](https://velog.velcdn.com/images/bomlee427/post/a7a0370b-351b-4f08-b789-62121299cc8b/image.png)
+**개발 후 UML**
+![개발 후 UML](https://velog.velcdn.com/images/bomlee427/post/a7a0370b-351b-4f08-b789-62121299cc8b/image.png)
 
 UML에서는 Member와 HealthProfile의 연관관계 방향이 완전히 달라졌다. 설계 당시에는 각 객체가 서로를 참조할 일이 있다면 양방향으로 설정해야 한다는 사실을 알지 못했다. 작업을 진행하며 HealthProfile을 통해 Member에 접근하는 경우가 있음을 알았고 양방향 1:1 연관관계로 수정했다. 그 후 쿼리 최적화 과정에서 설계와 정 반대인 단방향으로 변경했는데, **@OneToOne 연관관계에서는 주인 쪽의 LAZY 로딩만 정상 동작**한다는 것을 뒤늦게 알았기 때문이다. (https://thorben-janssen.com/hibernate-tips-same-primary-key-one-to-one-association/)
 
