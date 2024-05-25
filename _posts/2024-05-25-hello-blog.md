@@ -1,8 +1,8 @@
 ---
-title: "Welcome to Jekyll!"
-date: "+%Y-%m-%d"
+title: "Hello, Blog!"
+date: 2024-05-25T14:00:00+09:00
 categories:
 tags:
 ---
 
-template
+포스팅 테스트
