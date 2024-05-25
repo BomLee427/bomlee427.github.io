@@ -1,0 +1,103 @@
+---
+title: "Github Actions, CodeDeploy로 CI/CD 구축하기(작성중)"
+date: 2024-00-00T00:00:00+09:00
+categories:
+tags:
+classes: wide
+---
+
+
+### 구성
+![](https://velog.velcdn.com/images/bomlee427/post/44a4b4b4-3e50-4343-9197-587c99a59d73/image.png)
+1. 레포지토리에 커밋, Github Actions 워크플로우 트리거
+2. 도커 이미지 빌드
+3. 빌드된 이미지를 AWS ECR에 Push
+4. AWS S3에 배포 스크립트 등을 업로드
+5. AWS CodeDeploy에 배포를 요청
+6. AWS CodeDeploy가 AWS LightSail에 배포 과정을 진행
+7. AWS LightSail 내부에서 도커 이미지 및 배포 스크립트를 Pull&Run
+
+
+### 기술 선택 배경
+CI/CD는 크게 세 단계로 나눌 수 있다. **소스, 빌드, 배포**다. 그리고 이 세 단계를 조율하는 **파이프라인**까지 더해지면 CI/CD 파이프라인이 완성된다. 각 부분마다 다양한 선택지가 있고 이는 프로젝트 상황에 맞추어 고르면 된다. 이번 작업에서 각각의 기술을 선택한 배경은 다음과 같다.
+
+#### 소스
+빌드 이전 단계의 소스코드가 올라가는 레포지토리를 의미한다. 현재 진행중인 프로젝트는 **Github**를 적극 활용하고 있기 때문에 굳이 별도의 소스 레포지토리를 사용할 이유가 없었다.
+
+
+#### 빌드
+**Docker**를 사용해 컨테이너 이미지로 빌드하였다. 인터넷 상에서 찾을 수 있는 간단한 튜토리얼에는 S3 등에 소스를 통째로 올린 다음, CodeDeploy를 이용해 배포가 될 VM 내부에서 jar파일을 빌드하여 실행하는 방식이 많았다. 그러나 이 방법은 VM의 컴퓨팅 자원을 사용하기 때문에 자칫하면 배포 환경에 영향을 미칠 수 있어 고려하지 않았다. 또 컨테이너를 사용할 것이기 때문에 굳이 클라우드가 제공하는 별도의 빌드 도구 등을 사용할 필요도 없다. 그냥 Docker로 빌드를 마친 컨테이너 이미지만 깔끔하게 배포하는 쪽을 택하기로 했다.
+
+Docker를 사용하기로 했으니 도커 이미지가 올라갈 저장소(Repository)도 결정해야 한다. 일반적으로 가장 많이 사용하는 것은 **Docker hub**이다. 그 외에 클라우드 환경이라면 각 공급사에서 제공하는 저장소 서비스도 있다. AWS의 경우 **ECR**이 그것이다.
+
+비용과 편의성을 중점으로 두 가지 서비스를 비교하였다. Docker hub의 경우 public repository는 무료이지만 private repository를 사용하고자 한다면 일정 비용을 내야 하고, AWS ECR은 별도의 비용 정책이 있다. 500mb 이미지를 기준으로 비용은 큰 차이가 나지 않았으나, 아무래도 AWS 환경에 배포하는 만큼 **AWS ECR** 쪽이 보안 및 편의상 이점이 많았다(Github에 따로 repository 액세스 관련 정보를 저장하지 않아도 되기 때문). 이 부분은 OIDC 구축 부분에서 후술하기로 한다.
+
+
+#### 배포
+AWS EC2에 배포할 예정이기 때문에 관련하여 다양한 기능을 제공하는 **AWS CodeDeploy**를 사용한다. 단순한 어플리케이션이라면 VM 내부에서 Pull & Run만 하면 배포가 끝나므로 ssh 접속 등으로 해결하는 경우도 많지만, 보안상 좋은 방법은 아닌데다 추후 프로젝트 규모가 커지고 복잡도가 상승할 가능성도 높기 때문에 다양한 옵션과 기능을 제공하는 AWS CodeDeploy를 사용하기로 결정했다.
+
+
+#### 파이프라인
+**Github Actions**를 사용한다. 우선 익히기 쉽다(!). 또 실제 배포 환경에 영향을 미치지 않고 별도의 격리된 환경에서 빌드 및 배포가 가능하다. 한 번 배워두면 다른 배포 환경을 접하더라도 새 도구를 익혀야 하는 부담 없이 그대로 사용할 수 있고, 배포 뿐 아니라 다른 자동화 기능 구현에도 널리 사용되고 있다는 점도 공부하는 입장에서는 큰 장점이다.
+
+
+### 1. Spring Boot 프로젝트 생성
+우선 배포할 프로젝트를 생성한다.
+
+#### HelloWorldController.java
+```java
+// Annotation은 생략
+public class HelloWorldController {
+
+  @GetMapping("v1/hello-world")
+  public ResponseEntity<Object> testHelloWorld() {
+    return ResponseEntity.of(Optional.of("Hello World"));
+  }
+}
+
+```
+
+#### Dockerfile
+```dockerfile
+FROM openjdk:17.0.2-jdk
+ARG JAR_FILE_PATH=build/libs/*.jar
+ARG ARG_PROFILE=test
+ENV PROFILE=${ARG_PROFILE}
+COPY $JAR_FILE_PATH app.jar
+EXPOSE 8080
+ENTRYPOINT ["java", "-jar", "-Dspring.profiles.active=${PROFILE}", "app.jar"]
+```
+Docker build 시 ARG_PROFILE을 인수로 넘기면 환경을 다르게 해 빌드할 수 있는 도커파일이다.
+
+
+### 2. ECR 설정
+- 레포 생성: 이름 설정, private 레포
+- iam으로 연결할 수 있도록 iam 설정
+
+Docker hub vs AWS ECR 비교: https://medium.com/day34/container-repository-comparsion-dd4826f6a683
+
+### 3. EC2 설정
+- 인스턴스 생성 후 Docker, Docker compose, AWS CLI, CodeDeploy Agent 설치
+- 인스턴스에 IAM Role 부여
+https://blog.naver.com/PostView.naver?blogId=shino1025&logNo=222586028036
+https://hoon9901.github.io/aws-codedeploy/
+
+
+
+### 4. CodeDeploy 설정
+
+- 애플리케이션 및 배포 그룹 생성
+- ECR, EC2 접근가능한 IAM Role 부여
+- appspec.yml 및 배포 스크립트 작성 > repo에 그냥 올라가면 보안 이슈 생길 수 있음+로그인 명령어 이렇게 하드코딩해도 되는건가... > start, stop 스크립트 ec2 내부에, appspec.yml은 secrets에 작성하는 방식으로 결정
+
+### 5. Github Actions 설정
+- Github OIDC 세팅(ECR 및 배포과정 관련 권한)
+https://velog.io/@jeongmin78/CICD-Github-Action-AWS-IAM-Role-%EC%9D%B4%EC%9A%A9%ED%95%B4-%EC%9D%B4%EB%AF%B8%EC%A7%80%EB%A5%BC-ECR%EC%97%90-%EC%98%AC%EB%A6%AC%EA%B8%B0-8n3fmmgn
+- 워크플로우 작성 > 이것도 올라가면 안되는 것들 시크릿 세팅+버전업 워크플로우 포함해서 수정
+
+https://docs.aws.amazon.com/ko_kr/codepipeline/latest/userguide/tutorials-ecs-ecr-codedeploy.html#tutorials-ecs-ecr-codedeploy-imagerepository
+
+
+
+트러블슈팅
+기억나는대로 적을것
