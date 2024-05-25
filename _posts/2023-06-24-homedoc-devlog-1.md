@@ -57,11 +57,12 @@ HomeDoc의 간단한 서비스 개요는 위와 같다. 요컨대 환자와 의�
 ### 현실과 이상
 기능 측면의 요구사항은 나름대로 상세히 작성했지만 기술 측면의 요구사항은 볼품없었다. 처음 해보는 Java/Spring/JPA 프로젝트라 아는 게 거의 없었기 때문이다. 실제 프로젝트는 책이나 강의와는 전혀 달랐고, 고심해서 작성했던 ERD와 UML도 개발이 어느 정도 완료된 지금과 비교해 보면 다른 부분이 많다.
 
-**<설계 당시 ERD>**
-![](https://velog.velcdn.com/images/bomlee427/post/88b3bcb5-89ec-404c-bfcd-605865bc5702/image.png)
+**설계 당시 ERD**
+![설계 당시 ERD](https://velog.velcdn.com/images/bomlee427/post/88b3bcb5-89ec-404c-bfcd-605865bc5702/image.png)
 
-**<개발 후 ERD>**
-![](https://velog.velcdn.com/images/bomlee427/post/02492cb1-6cd6-4209-942d-34e34e434a1a/image.png)
+
+**개발 후 ERD**
+![개발 후 ERD](https://velog.velcdn.com/images/bomlee427/post/02492cb1-6cd6-4209-942d-34e34e434a1a/image.png)
 
 ERD에서 가장 눈에 띄는 차이로는 상속관계 매핑 전략의 변경이 있다. 현재는 **SINGLE_TABLE 전략**을 사용하고 있는데, 자식 객체의 필드 갯수나 복잡도가 크지 않고, 각 필드의 NULLABLE을 허용하는 것이 큰 문제가 되지 않기 때문에(건강 측정 기록이므로 오히려 허용해야 한다!) 해당 전략을 택했다.
 
