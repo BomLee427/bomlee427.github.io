@@ -19,7 +19,7 @@ description: >- # this means to ignore newlines until "baseurl:"
   Further knowledge, Better Code
 twitter_username: 
 github_username: BomLee427
-minimal_mistakes_skin: dirt
+minimal_mistakes_skin: contrast
 search: true
 
 # Build settings
@@ -58,7 +58,7 @@ plugins:
 author:
   name   : "Bom"
   avatar : "/assets/images/bio-photo.jpg"
-  bio    : "백엔드 개발자"
+  bio    : "Further knowledge, Better Code"
   links:
     - label: "GitHub"
       icon: "fab fa-fw fa-github"
