@@ -1,6 +1,6 @@
 ---
 title: "HomeDoc 프로젝트 명세서"
-date: 2024-06-15T00:00:00+09:00
+date: 2023-06-15T00:00:00+09:00
 categories: ["HomeDoc 개발 회고록"]
 tags:
 classes: wide
