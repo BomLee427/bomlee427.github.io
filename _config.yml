@@ -35,12 +35,13 @@ timezone: Asia/Seoul # https://en.wikipedia.org/wiki/List_of_tz_database_time_zo
 
 # Markdown settings
 kramdown:
-  auto_ids: false
-  enable_coderay: false
-  entity_output: as_char
-  footnote_nr: 1
-  smart_quotes: lsquo,rsquo,ldquo,rdquo
-  toc_levels: 1..6
+  # auto_ids: false
+  # enable_coderay: false
+  # entity_output: as_char
+  # footnote_nr: 1
+  # smart_quotes: lsquo,rsquo,ldquo,rdquo
+  # toc_levels: 1..6
+  hard_wrap: true
 
 include:
   - _pages
