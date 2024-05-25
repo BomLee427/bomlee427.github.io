@@ -22,7 +22,7 @@ classes: wide
 
 ### 헬스케어 서비스, HomeDoc
 
-https://velog.io/@bomlee427/homedoc-프로젝트-명세서
+[HomeDoc 프로젝트 명세서](https://bomlee427.github.io/homedoc-project-spec)
 HomeDoc의 프로젝트 명세 전문은 위 글에서 확인할 수 있다.
 
 
