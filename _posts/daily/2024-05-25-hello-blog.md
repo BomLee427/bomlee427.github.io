@@ -1,7 +1,7 @@
 ---
 title: "우당탕탕 블로그 이사"
 date: 2024-05-25T14:47:00+09:00
-categories: ["블로그"]
+categories: ["사설"]
 tags: ["jekyll"]
 classes: wide
 ---

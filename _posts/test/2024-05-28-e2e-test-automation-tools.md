@@ -1,8 +1,8 @@
 ---
 title: "E2E 테스트 프레임워크, 무엇이 있을까?"
 date: 2024-05-28T19:00:00+09:00
-categories: ['공부']
-tags: ['Test']
+categories: ['테스트코드']
+tags: ['E2E', 'Selenium', 'Cypress', 'Playwright']
 classes: wide
 toc: true
 ---
