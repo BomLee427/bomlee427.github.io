@@ -109,6 +109,7 @@ Spring MVC에서 HTTP 요청/응답을 처리하는 주체는 `DispatcherServlet
 `invokeHandlerMethod()`는 핸들러가 되는 `ServletInvocableHandlerMethod` 타입의 메서드를 실제로 호출하는 기능을 한다. 핸들러 호출에 필요한 다양한 처리를 한 뒤 핸들러를 호출한다.
 
 쭉 따라가 본 호출 스택은 다음과 같다.
+
 | Class | Method |
 | --- | --- |
 | `HttpMessageConverter` | `read()`/`write()` (헥헥...) |
@@ -119,6 +120,7 @@ Spring MVC에서 HTTP 요청/응답을 처리하는 주체는 `DispatcherServlet
 | `RequestMappingHandlerAdapter` | `invokeHandlerMethod()` |
 
 ![](../../attatchments/img/2024-07-08-response-body-read.png)
+
 ![](../../attatchments/img/2024-07-08-response-body-write.png)
 
 찾았다...
