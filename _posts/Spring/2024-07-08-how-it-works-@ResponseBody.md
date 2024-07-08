@@ -111,7 +111,7 @@ Spring MVC에서 HTTP 요청/응답을 처리하는 주체는 `DispatcherServlet
 쭉 따라가 본 호출 스택은 다음과 같다.
 
 | Class | Method |
-| --- | --- |
+| - | - |
 | `HttpMessageConverter` | `read()`/`write()` (헥헥...) |
 | | `readWithMessageConverters()`/`writeWithMessageConverters()` |
 | `RequestResponseBodyMethodProcessor` | `resolveArgument()`/`handleReturnValue()` |
