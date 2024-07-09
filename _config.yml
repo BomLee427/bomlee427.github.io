@@ -129,3 +129,11 @@ category_archive:
 tag_archive:
   type: liquid
   path: /tags/
+
+
+# Analytics
+analytics:
+  provider : "google-gtag"  # false (default), "google", "google-universal", "google-gtag", "custom"
+  google:
+    tracking_id : "G-4N0XD0K9W3"
+    anonymize_ip : # true, false (default)
