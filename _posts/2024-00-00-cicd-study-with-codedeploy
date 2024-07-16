@@ -7,7 +7,7 @@ classes: wide
 ---
 
 ## 개요
-현재 참여중인 사이드 프로젝트 **AXYZ** 에서, 개발환경의 CI/CD 자동화 파이프라인을 구축하는 일을 맡게 되었다.
+현재 참여중인 사이드 프로젝트에서, 개발환경의 CI/CD 자동화 파이프라인을 구축하는 일을 맡게 되었다.
 이를 위해 스터디한 내용을 기록하고자 한다.
 
 관련 코드는 모두 [https://github.com/BomLee427/cicd-study](https://github.com/BomLee427/cicd-study) 에서 볼 수 있다.
@@ -100,11 +100,11 @@ ECR에 프라이빗 리포지토리를 생성한다.
 #### 인스턴스 생성
 실제 Spring boot가 실행될 인스턴스를 생성한다.
 
-**EC2**뿐 아니라 **Lightsail**에도 Codedeploy 연결이 가능하다. Lightsail은 종량제인 EC2와 달리 정액 요금제이므로, 개발 환경 등에서는 유용하게 사용할 수 있을 것이다. 실제 개발 서버 역시 Lightsail에 배포되고 있다.
+**EC2**뿐 아니라 **Lightsail**에도 Codedeploy 연결이 가능하다. Lightsail은 종량제인 EC2와 달리 정액 요금제이므로, 개발 환경 등에서는 유용하게 사용할 수 있을 것이다. 우리 프로젝트의 실제 개발 서버 역시 Lightsail에 배포되고 있다.
 
 주의할 점은, 반드시 인스턴스의 성격을 나타내는 적절한 **태그**를 설정해야 한다는 것이다. CodeDeploy가 배포 대상 머신을 구분하는 기준이 바로 태그이기 때문이다. 이는 이후 CodeDeploy 섹션에서 자세히 후술하겠다.
 
-나는 `axyz-back-dev-instance-1`로 인스턴스 태그를 설정하였다.(EC2)
+나는 `cicd-study-instance-1`로 인스턴스 태그를 설정하였다.
 
 #### 배포에 필요한 도구 설치
 
@@ -120,7 +120,7 @@ ECR에 프라이빗 리포지토리를 생성한다.
 ](https://docs.aws.amazon.com/ko_kr/codedeploy/latest/userguide/codedeploy-agent-operations-install-ubuntu.html)
 
 
-#### IAM 역할 생성
+#### IAM 역할 생성(EC2)
 
 그 다음에는 인스턴스에 **IAM 역할**을 부여한다.
 우리는 인스턴스(구체적으로는 EC2 내부에 설치된 CodeDeploy agent)가 직접 ECR 등에 Pull & Run하게 할 것이므로, 인스턴스에게도 서비스 접근 권한이 필요하기 때문이다.
@@ -131,19 +131,35 @@ ECR에 프라이빗 리포지토리를 생성한다.
 
 ![](../attatchments/img/2024-07-09-cicd-study-with-codedeploy-ec2-role2.png)
 
-`AmazonEC2RoleforAWSCodeDeploy` 권한을 연결하고 다음을 클릭한다.
+`AmazonEC2RoleforAWSCodeDeploy` 정책을 연결하고 다음을 클릭한다.
 개발자가 식별 가능한 적절한 역할명과 설명을 작성한 다음 역할을 생성한다.
 
-#### IAM 역할 연결
+그리고 방금 생성한 IAM 역할을 인스턴스에 연결한다.
+인스턴스를 선택하고 보안 탭에서 IAM 역할을 위에서 설정한 역할로 수정하면 된다.
 
-방금 생성한 IAM 역할을 인스턴스에 연결해야 한다.
-EC2를 사용하는 경우에는 인스턴스 설정에서 쉽게 역할 연결이 가능하지만, Lightsail의 경우 일종의 온프레미스 인스턴스로 간주하고 별도의 설정을 해야 한다.
 
+#### IAM 사용자 생성(Lightsail)
+
+Lightsail의 경우 일종의 온프레미스 인스턴스로 간주되기 때문에, IAM 역할 대신 **IAM 사용자**를 만들어 라이트세일을 등록해 주어야 한다.
+
+적절한 **사용자 이름**을 설정한 뒤 다음을 누른다.
+**직접 정책 연결**을 선택하고 `AmazonEC2RoleforAWSCodeDeploy` 정책에 체크하고 IAM 사용자를 생성한다.
+
+그 다음 프로그래밍 방식 액세스를 활성화해 주어야 한다. 외부에서 AWS CLI를 사용해 CodeDeploy agent를 실행시키기 위함이다.
+방금 생성한 사용자를 선택하고, **보안 자격 증명** 탭에서 액세스 키 생성을 누른다. **Command Line Interface(CLI)**를 선택하고 액세스 키를 생성한다. 액세스 키와 비밀 키를 복사한 뒤 안전한 곳에 보관해 둔다.
+비밀 키는 이 페이지를 벗어나면 볼 수 없기 때문에 반드시 잘 보관해야 한다.
+
+이제 AWS CLI가 설치된 환경에서 `$ aws configure` 명령어를 사용하여 해당 액세스 키와 비밀 키로 이 IAM 사용자 권한에 접근할 수 있다.
+
+- Lightsail 내부에서 aws configure 입력해서 라이트세일에 접근 권한 부여
 
 ### 4. CodeDeploy 설정
 
 #### IAM 역할 생성
-CodeDeploy는 CodeDeploy agent를 통해 머신 내부에서 실행된다
+CodeDeploy 역시 서비스에 접근하기 위한 권한을 필요로 한다.
+EC2 IAM 역할을 만들었을 때와 마찬가지로 IAM 역할을 생성한다.
+단 이번에는 사용 사례를 **CodeDeploy**로 설정한다.
+
 
 #### 애플리케이션 및 배포 그룹 생성
 
