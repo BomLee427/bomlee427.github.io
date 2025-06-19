@@ -19,8 +19,8 @@ locale: ko
 url: "http://bomlee427.github.io"
 repository: "Bomlee427/bomlee427.github.io"
 description: >- # this means to ignore newlines until "baseurl:"
-  Further Knowledge, Better Code
-twitter_username: 
+  뭘 어떻게 해 그냥 하는 거지
+twitter_username:
 github_username: BomLee427
 minimal_mistakes_skin: default
 search: true
@@ -75,7 +75,7 @@ plugins:
 author:
   name   : "Bom"
   avatar : "/assets/images/bio-photo.jpg"
-  bio    : "Further Knowledge, Better Code"
+  bio    : "뭘 어떻게 해 그냥 하는 거지"
   links:
     - label: "GitHub"
       icon: "fab fa-fw fa-github"
