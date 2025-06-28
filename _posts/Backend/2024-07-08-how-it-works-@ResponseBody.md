@@ -1,7 +1,7 @@
 ---
 title: "@ResponseBody는 어떻게 Java 객체를 JSON 형식으로 보낼 수 있을까?"
 date: 2024-07-08T17:08:00+09:00
-categories: ["Spring"]
+categories: ["Backend"]
 tags: ["Spring MVC", "Jackson", "HttpMessageConverter", "Serialization"]
 classes: wide
 toc: true

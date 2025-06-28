@@ -1,7 +1,7 @@
 ---
 title: "2-1. 도메인 계층 - 계층형 패키지 구조와 Member 클래스"
 date: 2023-09-02T00:00:00+09:00
-categories: ["HomeDoc 개발 회고록"]
+categories: ['Backend', "HomeDoc 개발 회고록"]
 tags: ["엔티티","패키지 구조"]
 classes: wide
 toc: true

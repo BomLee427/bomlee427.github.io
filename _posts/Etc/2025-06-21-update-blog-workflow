@@ -1,0 +1,93 @@
+---
+title: "Github Workflow 알고 쓰기"
+date: 2025-06-21T00:00:00+09:00
+categories: ["Etc"]
+tags: ["Github Actions", "jekyll"]
+classes: wide
+toc: true
+---
+
+## 문제의 발단
+> 블로그...너무 방치해뒀다.
+
+가볍게 블로그 파비콘과 바이오부터 업데이트해 볼까~ 했는데,
+깃허브 워크플로를 이용해 자동화시켜두었던 빌드가 보기좋게 실패했다.
+
+``` log
+Run ruby/setup-ruby@******
+  with:
+    ruby-version: 3.1
+    bundler-cache: true
+    cache-version: 0
+Error: The current runner (ubuntu-24.04-x64) was detected as self-hosted because the platform does not match a GitHub-hosted runner image (or that image is deprecated and no longer supported).
+In such a case, you should install Ruby in the $RUNNER_TOOL_CACHE yourself, for example using https://github.com/rbenv/ruby-build
+You can take inspiration from this workflow for more details: https://github.com/ruby/ruby-builder/blob/master/.github/workflows/build.yml
+$ ruby-build 3.1.4 /opt/hostedtoolcache/Ruby/3.1.4/x64
+Once that completes successfully, mark it as complete with:
+$ touch /opt/hostedtoolcache/Ruby/3.1.4/x64.complete
+It is your responsibility to ensure installing Ruby like that is not done in parallel.
+
+```
+<small>*대충 이런 메시지...*</small>
+
+
+읽어보니 워크플로가 실행되는 runner와, jekyll을 빌드하는 ruby 사이에서 뭔가 불협화음이 생긴 것 같았다.
+문제를 해결하려는 과정에서 깃허브 워크플로의 정확한 구조나 흐름을 모르고 있는 스스로를 발견해서 스터디한 내용을 적어보고자 한다.
+
+
+## Github Actions는
+
+> GitHub Actions를 사용하여 리포지토리에서 바로 소프트웨어 개발 워크플로를 자동화, 사용자 지정 및 실행합니다. CI/CD를 포함하여 원하는 작업을 수행하기 위한 작업을 검색, 생성 및 공유하고 완전히 사용자 정의된 워크플로에서 작업을 결합할 수 있습니다.
+> 
+> 출처: 공식 문서 https://docs.github.com/ko/actions
+
+Github Actions는 깃허브 Repository 상에서 곧바로 자동화된 워크플로를 실행할 수 있도록 하는 기능이다.
+코드 푸쉬 등의 트리거만으로 레포지토리에서 바로 실행된다는 장점 때문에 주로 테스트나 CI/CD를 구축할 때에 많이 쓰이고, 깃허브 레포지토리에도 접근할 수 있어 이슈나 PR 관리 등에도 유용하다.
+
+깃허브 레포지토리의 `.github/workflows` 디렉토리 내에 워크플로를 정의하는 yml 파일을 저장해 두면, 트리거가 발생할 때마다 워크플로가 자동으로 실행된다.
+
+공식 문서가 제공하는 워크플로 파일의 예제는 아래와 같다.
+
+
+``` yaml
+name: learn-github-actions
+run-name: ${{ github.actor }} is learning GitHub Actions
+on: [push]
+jobs:
+  check-bats-version:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - run: npm install -g bats
+      - run: bats -v
+
+```
+
+<small>*각 property에 대한 자세한 설명은 [여기](https://docs.github.com/ko/actions/use-cases-and-examples/creating-an-example-workflow#%EC%9B%8C%ED%81%AC%ED%94%8C%EB%A1%9C-%ED%8C%8C%EC%9D%BC-%EC%9D%B4%ED%95%B4)*</small>
+
+
+## 에러 로그 뜯어보기
+
+간단하게 정리했으니 내 설정파일과 에러 로그를 다시 꼼꼼히 살펴보자.
+
+``` log
+Run ruby/setup-ruby@******
+  with:
+    ruby-version: 3.1
+    bundler-cache: true
+    cache-version: 0
+Error: The current runner (ubuntu-24.04-x64) was detected as self-hosted because the platform does not match a GitHub-hosted runner image (or that image is deprecated and no longer supported).
+In such a case, you should install Ruby in the $RUNNER_TOOL_CACHE yourself, for example using https://github.com/rbenv/ruby-build
+You can take inspiration from this workflow for more details: https://github.com/ruby/ruby-builder/blob/master/.github/workflows/build.yml
+$ ruby-build 3.1.4 /opt/hostedtoolcache/Ruby/3.1.4/x64
+Once that completes successfully, mark it as complete with:
+$ touch /opt/hostedtoolcache/Ruby/3.1.4/x64.complete
+It is your responsibility to ensure installing Ruby like that is not done in parallel.
+
+```
+
+우선 `Run ruby/setup-ruby@******` 부분에 주목하자.
+`ruby/setup-ruby`는 액션의 이름이다.

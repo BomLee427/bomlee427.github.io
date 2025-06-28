@@ -1,7 +1,7 @@
 ---
 title: "2-2. 도메인 계층 - Measurement, Glucose, Pressure"
 date: 2023-09-16T00:00:00+09:00
-categories: ["HomeDoc 개발 회고록"]
+categories: ['Backend', "HomeDoc 개발 회고록"]
 tags: ["엔티티"]
 classes: wide
 toc: true
